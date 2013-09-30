@@ -1,0 +1,80 @@
+```{r Initialization, include=FALSE}
+options(width = 200)
+load.project()
+```
+# What If Everyone Lived in the Big City? Round 1
+
+On a recent roadtrip I was driving through rural Alabama and wondered what the country would look like if we emptied out the rural areas and all moved to cities. I'm working on learning R and though this might be a useful exercise to practice with.
+
+## US Cities Data
+
+I'm starting with a small matrix of US cities that will be the basis for a pairwise distance matrix. This is a default data set privided by the maps library. This matrix has `r length(loc[,1])` cities and the population sums to `r format(sum(loc[,1]), scientific=FALSE, big.mark=",")`. Obviously this list does not have a full tally of the residents in the USA!
+
+```{r City Data}
+head(loc)
+dm <- rdist.earth(loc[,2:3], loc[,2:3], miles=TRUE)
+
+# Setup names and zero out small values
+rownames(dm) <- name
+colnames(dm) <- name
+dm[dm[] < 0.1] <- 0
+
+# A sample of the data
+dm[1:5,1:5]
+```
+
+## How do we move people?
+
+The algoritm is that the following function will select the smallest remaining city and move its population to the closest city.
+
+```{r Move Smallest to Closest Function, child="lib/movesmallestToClosest.rmd"}
+```
+
+Here's an example:
+
+```{r Example Move}
+temppop <- pop
+temppop <- moveSmallestToClosest(temppop, dm, verbose=TRUE)
+```
+
+## Move everyone!
+
+Now lets start moving people until every city has over 1 million people.
+
+```{r Move Everyone}
+repeat {
+  pop <- moveSmallestToClosest(pop, dm)
+  
+  # Get the latest pass
+  pop.pass <- pop[,ncol(pop)]
+  
+  # Inspect just the cities that still have population
+  pop.pass <- pop.pass[pop.pass > 0]
+  smallcities <- length(pop.pass[pop.pass < 1e6])
+  #printf("Small cities remaining: %d", smallcities)
+                      
+  if (smallcities == 0) {
+    break
+  }
+}
+```
+
+This completes in `r ncol(pop)-1` passes and we end up with `r nrow(pop[pop[,ncol(pop)] > 0,])` cities:
+
+```{r Table}
+pop[pop[,ncol(pop)] > 0, c(1, ncol(pop))]
+```
+
+## Map
+
+This maps shows each of the original cities as a grey dot. The new cities with over a million residents each are shown as a blue circle:
+
+```{r Map}
+map('state')
+points(loc[,2], loc[,3], col='grey', pch=".", cex=5)
+points(loc[pop[,ncol(pop)] > 0,2], loc[pop[,ncol(pop)] > 0,3], col='blue')
+```
+
+# References
+
+* http://stackoverflow.com/questions/8509329/finding-nearest-neighbor-between-2-sets-of-dated-points

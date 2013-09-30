@@ -1,0 +1,5 @@
+.Rhistory
+*.html
+*.md
+.Rproj
+.Rproj.user
