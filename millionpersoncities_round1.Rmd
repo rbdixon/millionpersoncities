@@ -75,6 +75,16 @@ points(loc[,2], loc[,3], col='grey', pch=".", cex=5)
 points(loc[pop[,ncol(pop)] > 0,2], loc[pop[,ncol(pop)] > 0,3], col='blue')
 ```
 
+## Observations
+
+1. The us.cities data set does not have all of the residents of the United States. Neither does the US State map provided by R. No Alaska or Hawaii much less Puerto Rico and other US territories.
+2. 1005 citites isn't a very granular data set for mapping the whereabouts of 313 million people in the US.
+3. The cities are not as you would expect. For example there's no Boston but there is a Newton and Somerville, MA that collectively should have been Boston:
+
+```{r}
+pop[ c("Newton MA", "Somerville MA"), c(1,ncol(pop)) ]
+```
+
 # References
 
 * http://stackoverflow.com/questions/8509329/finding-nearest-neighbor-between-2-sets-of-dated-points
